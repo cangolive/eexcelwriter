@@ -12,6 +12,7 @@ class EExcelWriter extends CGridView{
     public $fileName = null;
     public $stream = false; //stream to browser
     public $title = '';
+    public $autoWidth = true;
 
     private $workBook;
     private $activeWorksheet;
@@ -58,7 +59,9 @@ class EExcelWriter extends CGridView{
                 $head =trim($column->header)!=='' ? $column->header : $column->grid->blankDisplay;
 
             $this->activeWorksheet->write( $this->currentRow , $this->currentCol, $head, $this->headerFormat);
-            $this->columnLenghts[$this->currentCol] = strlen($head);
+            if ($this->autoWidth) {
+                $this->columnLenghts[$this->currentCol] = strlen($head);
+            }
             $this->currentCol++;
         }
         $this->currentRow++;
@@ -116,7 +119,7 @@ class EExcelWriter extends CGridView{
                 $value = str_replace("$", "", $value);
             }
             $this->activeWorksheet->write( $this->currentRow , $this->currentCol, $value, $this->rowFormat);
-            if( $this->columnLenghts[$this->currentCol] < strlen($value)){
+            if($this->autoWidth && $this->columnLenghts[$this->currentCol] < strlen($value)){
                 $this->columnLenghts[$this->currentCol] = strlen($value);
             }
             $this->currentCol++;
@@ -154,7 +157,9 @@ class EExcelWriter extends CGridView{
 
         $this->renderHeader();
         $this->renderBody();
-        $this->autofitColumns();
+        if ($this->autoWidth) {
+            $this->autofitColumns();
+        }
         $this->workBook->close();
         if($this->stream){ //output to browser
             header("Content-Type: application/x-msexcel; name=\"".basename($this->fileName)."\"");
